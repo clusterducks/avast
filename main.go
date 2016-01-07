@@ -2,6 +2,7 @@ package main
 
 import (
   "fmt"
+  "bufio"
 
   "github.com/docker/engine-api/client"
   "github.com/docker/engine-api/types"
@@ -14,6 +15,8 @@ func main() {
         panic(err)
     }
 
+    fmt.Println(" --> Listing running containers...")
+
     options := types.ContainerListOptions{All: true}
     containers, err := cli.ContainerList(options)
     if err != nil {
@@ -22,5 +25,23 @@ func main() {
 
     for _, c := range containers {
         fmt.Println(c.ID)
+    }
+
+    fmt.Println(" --> Listening for events...")
+
+    evtOpts := types.EventsOptions{}
+    evtReader, err := cli.Events(evtOpts)
+    if err != nil {
+        panic(err)
+    }
+    defer evtReader.Close()
+
+    rd := bufio.NewReader(evtReader)
+    for {
+      evt, err := rd.ReadString('\n')
+      if err != nil {
+          panic(err)
+      }
+      fmt.Print(evt)
     }
 }
