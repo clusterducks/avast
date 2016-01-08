@@ -30,14 +30,16 @@ path.link {
       <button type="button" id="sendBtn">Send</button>
     </form>
   </div>
-  <div id="container"></div>
+  <div id="ws"></div>
+  <div id="containers"></div>
+  <div id="images"></div>
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
   <script type="text/javascript" src="//d3js.org/d3.v3.min.js"></script>
   <script type="text/javascript">
     $(function () {
       var ws;
       if (window.WebSocket === undefined) {
-        $("#container").append("Your browser does not support WebSockets");
+        $("#ws").append("Your browser does not support WebSockets");
         return;
       } else {
         ws = initWS();
@@ -45,7 +47,7 @@ path.link {
 
       function initWS() {
         var socket = new WebSocket("ws://localhost:8080/ws"),
-          container = $("#container");
+          container = $("#ws");
 
         socket.onopen = function() {
           container.append("<p>Socket is open</p>");
@@ -66,6 +68,14 @@ path.link {
         e.preventDefault();
         ws.send(JSON.stringify({ Num: parseInt($("#numberfield").val()) }));
       });
+    });
+  </script>
+  <script type="text/javascript">
+    $.ajax({
+      url: '/containers/list',
+    })
+    .done(function(data) {
+      
     });
   </script>
   <script type="text/javascript">
