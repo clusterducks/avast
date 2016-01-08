@@ -15,14 +15,17 @@ package main
 
 import (
     "fmt"
+    "time"
     "io/ioutil"
     "bufio"
     "net/http"
     "encoding/json"
 
+    "github.com/gorilla/mux"
     "github.com/gorilla/websocket"
     "github.com/docker/engine-api/client"
     "github.com/docker/engine-api/types"
+    "github.com/dustin/go-humanize"
 )
 
 var cli *client.Client
@@ -57,6 +60,120 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
     go echoEvents(conn)
 }
 
+func containersHandler(w http.ResponseWriter, r *http.Request) {
+    options := types.ContainerListOptions{All: true}
+    containers, err := cli.ContainerList(options)
+    if err != nil {
+        panic(err)
+    }
+
+    json, err := json.Marshal(&containers)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    w.Write(json)
+}
+
+func containerHandler(w http.ResponseWriter, r *http.Request) {
+    vars := mux.Vars(r)
+    container, err := cli.ContainerInspect(vars["name"])
+    if err != nil {
+        panic(err)
+    }
+
+    json, err := json.Marshal(&container)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    w.Write(json)
+}
+
+type ImageNode struct {
+    ID          string              `json:"id"`
+    ParentID    string              `json:"parentId"`
+    RepoTags    []string            `json:"repoTags"`
+    RepoDigests []string            `json:"repoDigests"`
+    Created     string              `json:"created"`
+    Size        string              `json:"size"`
+    VirtualSize string              `json:"virtualSize"`
+    Labels      map[string]string   `json:"labels"`
+    //types.Image
+    Children    []*ImageNode    `json:"children"`
+}
+
+func (node *ImageNode) Add(parent string, nodes []*ImageNode) {
+    for _, n := range nodes {
+        if n.ParentID == parent {
+            node.Children = append(node.Children, n)
+            n.Add(n.ID, nodes)
+        }
+    }
+}
+
+func imagesHandler(w http.ResponseWriter, r *http.Request) {
+    options := types.ImageListOptions{All: true}
+    images, err := cli.ImageList(options)
+    if err != nil {
+        panic(err)
+    }
+
+    nodes := make([]*ImageNode, len(images))
+    for i, img := range images {
+        nodes[i] = &ImageNode{
+            //img
+            img.ID,
+            img.ParentID,
+            img.RepoTags,
+            img.RepoDigests,
+            humanize.Time(time.Unix(img.Created, 0)),
+            humanize.Bytes(uint64(img.Size)),
+            humanize.Bytes(uint64(img.VirtualSize)),
+            img.Labels,
+            nil,
+        }
+    }
+
+    root := &ImageNode{
+        //types.Image{},
+        "", "", nil, nil,
+        "", "", "", nil, nil,
+    }
+    root.Add("", nodes)
+
+    json, err := json.Marshal(&root)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    w.Write(json)
+}
+
+func historyHandler(w http.ResponseWriter, r *http.Request) {
+    vars := mux.Vars(r)
+    history, err := cli.ImageHistory(vars["id"])
+    if err != nil {
+        panic(err)
+    }
+
+    json, err := json.Marshal(&history)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    w.Write(json)
+}
+
+
 func echoEvents(conn *websocket.Conn) {
     fmt.Println(" --> Listening for events...")
 
@@ -84,80 +201,22 @@ func echoEvents(conn *websocket.Conn) {
     }
 }
 
-type ImageNode struct {
-  Id        string
-  ParentId  string
-  Children  []*ImageNode  `json:"children,omitempty"`
-  *types.Image
-}
-
-func (node *ImageNode) Add(parent string, nodes []*ImageNode) {
-    for _, n := range nodes {
-        if n.ParentId == parent {
-            node.Children = append(node.Children, n)
-            n.Add(n.Id, nodes)
-        }
-    }
-}
-
 func main() {
     var err error
-    var containers []types.Container
-    var images []types.Image
 
     cli, err = client.NewClient("unix:///var/run/docker.sock", "v1.21", nil, defaultHeaders)
     if err != nil {
         panic(err)
     }
 
-    fmt.Println(" --> Listing docker containers...")
-
-    copts := types.ContainerListOptions{All: true}
-    containers, err = cli.ContainerList(copts)
-    if err != nil {
-        panic(err)
-    }
-
-    for _, c := range containers {
-        fmt.Printf("ID: %v\n\tNames: %v\n\tImage: %v\n\tImageID: %v\n", c.ID, c.Names, c.Image, c.ImageID)
-    }
-
-    containerJson, _ := json.Marshal(&containers)
-    fmt.Println(string(containerJson))
-
-    ///////////////////////////////////////////////////////////////////////////
-
-    fmt.Println(" --> Listing docker images...")
-
-    iopts := types.ImageListOptions{All: true}
-    images, err = cli.ImageList(iopts)
-    if err != nil {
-        panic(err)
-    }
-
-    for _, i := range images {
-        fmt.Printf("ID: %v\n\tParentID: %v\n\n", i.ID, i.ParentID)
-    }
-
-    //inodes := make([]*ImageNode, len(images))
-    //for i, img := range images {
-    //    fmt.Printf("ID: %v\n\tParentID: %v\n", img.ID, img.ParentID)
-    //    inodes[i] = &ImageNode{
-    //      string(img.ID),
-    //      string(img.ParentID),
-    //      nil,
-    //      &img,
-    //    }
-    //}
-
-    //root := &ImageNode{"", "", nil, nil}
-    //root.Add("", inodes)
-
-    //imageJson, _ := json.Marshal(&root)
-    //fmt.Println(string(imageJson))
-
-    http.HandleFunc("/ws", wsHandler)
-    http.HandleFunc("/", rootHandler)
+    router := mux.NewRouter()
+    router.HandleFunc("/", rootHandler)
+    router.HandleFunc("/ws", wsHandler)
+    router.HandleFunc("/containers/list", containersHandler)
+    router.HandleFunc("/container/{name}/inspect", containerHandler)
+    router.HandleFunc("/images/list", imagesHandler)
+    router.HandleFunc("/history/{id}", historyHandler)
+    http.Handle("/", router)
 
     panic(http.ListenAndServe(":8080", nil))
 }
