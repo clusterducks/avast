@@ -16,6 +16,7 @@ package main
 import (
     "fmt"
     "time"
+    //"strings"
     "io/ioutil"
     "bufio"
     "net/http"
@@ -25,6 +26,7 @@ import (
     "github.com/gorilla/websocket"
     "github.com/docker/engine-api/client"
     "github.com/docker/engine-api/types"
+    "github.com/docker/engine-api/types/events"
     "github.com/dustin/go-humanize"
 )
 
@@ -67,14 +69,14 @@ func containersHandler(w http.ResponseWriter, r *http.Request) {
         panic(err)
     }
 
-    json, err := json.Marshal(&containers)
+    data, err := json.Marshal(&containers)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
 
     w.Header().Set("Content-Type", "application/json")
-    w.Write(json)
+    w.Write(data)
 }
 
 func containerHandler(w http.ResponseWriter, r *http.Request) {
@@ -84,14 +86,14 @@ func containerHandler(w http.ResponseWriter, r *http.Request) {
         panic(err)
     }
 
-    json, err := json.Marshal(&container)
+    data, err := json.Marshal(&container)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
 
     w.Header().Set("Content-Type", "application/json")
-    w.Write(json)
+    w.Write(data)
 }
 
 type ImageNode struct {
@@ -146,14 +148,14 @@ func imagesHandler(w http.ResponseWriter, r *http.Request) {
     }
     root.Add("", nodes)
 
-    json, err := json.Marshal(&root)
+    data, err := json.Marshal(&root)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
 
     w.Header().Set("Content-Type", "application/json")
-    w.Write(json)
+    w.Write(data)
 }
 
 func historyHandler(w http.ResponseWriter, r *http.Request) {
@@ -163,19 +165,19 @@ func historyHandler(w http.ResponseWriter, r *http.Request) {
         panic(err)
     }
 
-    json, err := json.Marshal(&history)
+    data, err := json.Marshal(&history)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
 
     w.Header().Set("Content-Type", "application/json")
-    w.Write(json)
+    w.Write(data)
 }
 
 
 func echoEvents(conn *websocket.Conn) {
-    fmt.Println(" --> Listening for events...")
+    fmt.Printf(" --> Connected to client (%v)...\n", conn.RemoteAddr())
 
     evtOpts := types.EventsOptions{}
     evtReader, err := cli.Events(evtOpts)
@@ -188,13 +190,19 @@ func echoEvents(conn *websocket.Conn) {
     for {
         evt, err := rd.ReadString('\n')
         if err != nil {
-            panic(err)
+            fmt.Println(err)
+        }
+
+        var message events.Message
+        err = json.Unmarshal([]byte(evt), &message)
+        if err != nil {
+            fmt.Println(err)
         }
 
         fmt.Println(" --> Received docker event...")
-        fmt.Print(evt)
+        fmt.Println(message)
 
-        err = conn.WriteJSON(evt)
+        err = conn.WriteJSON(message)
         if err != nil {
             fmt.Println(err)
         }
