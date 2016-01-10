@@ -46,7 +46,7 @@ path.link {
       }
 
       function initWS() {
-        var socket = new WebSocket("ws://192.168.99.101:8080/ws"),
+        var socket = new WebSocket("ws://localhost:8080/ws"),
           container = $("#ws");
 
         socket.onopen = function() {
