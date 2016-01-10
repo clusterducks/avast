@@ -110,8 +110,8 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
     }
     wsHub.register <- c
 
+    echoEvents(c)
+
     go c.writePump()
-    // remove eventPump here and channel echoing events out through readPump
-    eventPump(c)
     c.readPump()
 }

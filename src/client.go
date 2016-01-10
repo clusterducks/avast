@@ -19,7 +19,6 @@ import (
 )
 
 var cli *client.Client
-
 var defaultHeaders = map[string]string{"User-Agent": "engine-api-cli-1.0"}
 
 func newClient() {

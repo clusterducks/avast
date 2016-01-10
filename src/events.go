@@ -16,39 +16,29 @@ package main
 
 import (
     "bufio"
-    "encoding/json"
     "fmt"
 
     "github.com/docker/engine-api/types"
-    "github.com/docker/engine-api/types/events"
+    "github.com/gorilla/websocket"
 )
 
-func eventPump(c *connection) {
-    fmt.Printf(" --> eventPump - Connected to client (%v)...\n", c.ws.RemoteAddr())
+func echoEvents(c *connection) {
+    fmt.Printf(" --> Connected to client (%v)...\n", c.ws.RemoteAddr())
+
     options := types.EventsOptions{}
     r, err := cli.Events(options)
     if err != nil {
         panic(err)
     }
     defer r.Close()
-    rd := bufio.NewReader(r)
 
-    for {
-        evt, err := rd.ReadString('\n')
-        if err != nil {
-            fmt.Println(err)
-        }
-
-        var message events.Message
-        if err = json.Unmarshal([]byte(evt), &message); err != nil {
-            fmt.Println(err)
-        }
+    s := bufio.NewScanner(r)
+    for s.Scan() {
+        evt := s.Text()
 
         fmt.Println(" --> Received docker event...")
-        fmt.Println(message)
+        fmt.Println(evt)
 
-        data, _ := json.Marshal(&message)
-        wsHub.broadcast <- data
+        c.write(websocket.TextMessage, []byte(evt))
     }
 }
-
