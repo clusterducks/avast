@@ -28,7 +28,8 @@ func newClient() {
     flag.Parse()
 
     var err error
-    cli, err = client.NewClient(*sock, "v1.21", nil, defaultHeaders)
+    //cli, err = client.NewClient(*sock, "v1.21", nil, defaultHeaders)
+    cli, err = client.NewEnvClient()
     if err != nil {
         panic(err)
     }
