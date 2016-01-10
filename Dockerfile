@@ -11,7 +11,7 @@ RUN apk --update add $BUILD_DEPS
 WORKDIR $BUILD_PATH
 COPY . $BUILD_PATH
 
-RUN go build -o /usr/bin/docker-hack src/main.go
+RUN go build -o /usr/bin/docker-hack github.com/bfowle/docker-hack/src/
 
 #RUN apk --update add $BUILD_DEPS && \
 #  cd $BUILD_PATH; go build -o /usr/bin/docker-hack . && \

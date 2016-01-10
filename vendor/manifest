@@ -4,7 +4,7 @@
 		{
 			"importpath": "github.com/docker/engine-api",
 			"repository": "https://github.com/docker/engine-api",
-			"revision": "283d3f3cf38200a14ec6aaa60d3c5a48385a8421",
+			"revision": "03462ad7c9bf53d866dc734cf00786444e60d205",
 			"branch": "master"
 		},
 		{
