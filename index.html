@@ -72,10 +72,17 @@ path.link {
   </script>
   <script type="text/javascript">
     $.ajax({
-      url: '/containers/list',
+      url: '/swarm/datacenters',
     })
     .done(function(data) {
-      
+      console.log(data);
+    });
+
+    $.ajax({
+      url: '/info',
+    })
+    .done(function(data) {
+      console.log(data);
     });
   </script>
   <script type="text/javascript">
@@ -100,7 +107,7 @@ path.link {
       .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    d3.json("/images/list", function(error, flare) {
+    d3.json("/images", function(error, flare) {
       if (error) throw error;
 
       flare.x0 = 0;

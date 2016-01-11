@@ -15,10 +15,12 @@
 package main
 
 import (
-    "bufio"
+    "encoding/json"
     "fmt"
+    "io"
 
     "github.com/docker/engine-api/types"
+    "github.com/docker/engine-api/types/events"
     "github.com/gorilla/websocket"
 )
 
@@ -32,13 +34,24 @@ func echoEvents(c *connection) {
     }
     defer r.Close()
 
-    s := bufio.NewScanner(r)
-    for s.Scan() {
-        evt := s.Text()
+    d := json.NewDecoder(r)
+    for {
+        var event events.Message
+        if err := d.Decode(&event); err != nil {
+            if err == io.EOF {
+                break
+            }
+            fmt.Println(err)
+        }
 
         fmt.Println(" --> Received docker event...")
-        fmt.Println(evt)
+        fmt.Println(event)
 
-        c.write(websocket.TextMessage, []byte(evt))
+        data, err := json.Marshal(event)
+        if err != nil {
+            fmt.Println(err)
+        }
+
+        c.write(websocket.TextMessage, []byte(data))
     }
 }

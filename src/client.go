@@ -24,7 +24,7 @@ var cli *client.Client
 var defaultHeaders = map[string]string{"User-Agent": "engine-api-cli-1.0"}
 var sock = flag.String("sock", "unix:///var/run/docker.sock", "docker socket path")
 
-func newClient() {
+func registerClient() {
     flag.Parse()
 
     var err error

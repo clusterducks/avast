@@ -25,7 +25,8 @@ func historyHandler(w http.ResponseWriter, r *http.Request) {
     vars := mux.Vars(r)
     history, err := cli.ImageHistory(vars["id"])
     if err != nil {
-        panic(err)
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
     }
 
     data, err := json.Marshal(&history)

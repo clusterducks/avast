@@ -32,17 +32,24 @@ func webHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
     flag.Parse()
-    newClient()
+    registerClient()
+    registerConsul()
     go wsHub.run()
 
-    router := mux.NewRouter()
-    router.HandleFunc("/", webHandler)
-    router.HandleFunc("/ws", wsHandler)
-    router.HandleFunc("/containers/list", containersHandler)
-    router.HandleFunc("/container/{name}/inspect", containerHandler)
-    router.HandleFunc("/images/list", imagesHandler)
-    router.HandleFunc("/history/{id}", historyHandler)
-    http.Handle("/", router)
+    r := mux.NewRouter()
+    r.HandleFunc("/", webHandler)
+    r.HandleFunc("/ws", wsHandler)
+    r.HandleFunc("/containers", containersHandler)
+    r.HandleFunc("/container/{name}/inspect", containerHandler)
+    r.HandleFunc("/images", imagesHandler)
+    r.HandleFunc("/history/{id}", historyHandler)
+    r.HandleFunc("/info", infoHandler)
+    r.HandleFunc("/swarm/datacenters", swarmDatacentersHandler)
+    r.HandleFunc("/swarm/nodes", swarmNodesHandler)
+    r.HandleFunc("/swarm/health/{name}", swarmHealthHandler)
+    // @TODO: wrap all routes in a method similar to this:
+    // - https://github.com/hashicorp/consul/blob/ae7e96afea84f55c694dfa29877976adfb7ebabf/command/agent/http.go#L292
+    http.Handle("/", r)
 
     panic(http.ListenAndServe(*addr, nil))
 }
