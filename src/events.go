@@ -15,16 +15,16 @@
 package main
 
 import (
+    //"bufio"
     "encoding/json"
     "fmt"
     "io"
 
     "github.com/docker/engine-api/types"
     "github.com/docker/engine-api/types/events"
-    "github.com/gorilla/websocket"
 )
 
-func echoEvents(c *connection) {
+func (c *connection) echoEvents() {
     fmt.Printf(" --> Connected to client (%v)...\n", c.ws.RemoteAddr())
 
     options := types.EventsOptions{}
@@ -35,23 +35,32 @@ func echoEvents(c *connection) {
     defer r.Close()
 
     d := json.NewDecoder(r)
-    for {
-        var event events.Message
-        if err := d.Decode(&event); err != nil {
-            if err == io.EOF {
-                break
+    messages := make(chan events.Message)
+
+    go func() {
+        for {
+            var event events.Message
+            if err := d.Decode(&event); err != nil {
+                if err == io.EOF {
+                    break
+                }
+                fmt.Println(err)
             }
-            fmt.Println(err)
+            messages <- event
         }
+    }()
 
-        fmt.Println(" --> Received docker event...")
-        fmt.Println(event)
+    for {
+        select {
+        case msg := <-messages:
+            fmt.Println(" --> Received docker event...")
+            fmt.Println(msg)
 
-        data, err := json.Marshal(event)
-        if err != nil {
-            fmt.Println(err)
+            data, err := json.Marshal(msg)
+            if err != nil {
+                fmt.Println(err)
+            }
+            wsHub.broadcast <- data
         }
-
-        c.write(websocket.TextMessage, []byte(data))
     }
 }

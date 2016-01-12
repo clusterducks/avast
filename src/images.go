@@ -23,7 +23,6 @@ import (
     "github.com/dustin/go-humanize"
 )
 
-
 type ImageNode struct {
     ID          string              `json:"id"`
     ParentID    string              `json:"parentId"`
