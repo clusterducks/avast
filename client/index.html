@@ -1,29 +1,37 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<title>Docker Hack</title>
-<script src="node_modules/es6-shim/es6-shim.js"></script>
-<script src="node_modules/angular2/bundles/angular2-polyfills.js"></script>
-<script src="node_modules/systemjs/dist/system.src.js"></script>
-<script src="node_modules/rxjs/bundles/Rx.js"></script>
-<script src="node_modules/angular2/bundles/angular2.dev.js"></script>
-<script>
-System.config({
-    //transpiler: 'typescript',
-    //typescriptOptions: {
-    //    emitDecoratorMetadata: true
-    //},
-    packages: {
-        'app': {
-            format: 'register',
-            defaultExtension: 'js'
-        }
-    }
-});
-System.import('app/boot')
-    .then(null, console.error.bind(console));
-</script>
+  <base href="/">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Avast">
+  <meta name="author" content="Brett Fowle <brettfowle@gmail.com>">
+  <title>Avast</title>
+  <script src="node_modules/es6-shim/es6-shim.js"></script>
+  <script src="node_modules/angular2/bundles/angular2-polyfills.js"></script>
+  <script src="node_modules/systemjs/dist/system.src.js"></script>
+  <script src="node_modules/typescript/lib/typescript.js"></script>
+  <script src="node_modules/rxjs/bundles/Rx.js"></script>
+  <script src="node_modules/angular2/bundles/angular2.dev.js"></script>
+  <script src="node_modules/angular2/bundles/router.dev.js"></script>
+  <script>
+  System.config({
+      transpiler: 'typescript',
+      typescriptOptions: {
+          emitDecoratorMetadata: true
+      },
+      packages: {
+          'app': {
+              //format: 'register',
+              defaultExtension: 'ts'
+          }
+      }
+  });
+  System.import('app/boot')
+      .then(null, console.error.bind(console));
+  </script>
 </head>
 <body>
-  <docker-hack>Loading...</docker-hack>
+  <avast>Loading...</avast>
 </body>
 </html>
