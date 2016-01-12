@@ -14,9 +14,18 @@
 
 package main
 
-func main() {
-    go wsHub.run()
-    registerClient()
-    registerConsul()
-    startWebserver()
+import (
+    "fmt"
+    "net/http"
+)
+
+func consulDatacentersHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
+    datacenters, err := consul.Catalog.Datacenters()
+    if err != nil {
+        w.WriteHeader(http.StatusBadRequest)
+        w.Write([]byte(fmt.Sprintf("Consul endpoint failed: %v", err)))
+        return nil, nil
+    }
+
+    return datacenters, nil
 }

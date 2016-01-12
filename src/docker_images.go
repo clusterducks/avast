@@ -15,7 +15,7 @@
 package main
 
 import (
-    "encoding/json"
+    "fmt"
     "net/http"
     "time"
 
@@ -35,20 +35,22 @@ type ImageNode struct {
     Children    []*ImageNode        `json:"children"`
 }
 
-func (node *ImageNode) Add(parent string, nodes []*ImageNode) {
+func (node *ImageNode) add(parent string, nodes []*ImageNode) {
     for _, n := range nodes {
         if n.ParentID == parent {
             node.Children = append(node.Children, n)
-            n.Add(n.ID, nodes)
+            n.add(n.ID, nodes)
         }
     }
 }
 
-func imagesHandler(w http.ResponseWriter, r *http.Request) {
+func dockerImagesHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
     options := types.ImageListOptions{All: true}
     images, err := cli.ImageList(options)
     if err != nil {
-        panic(err)
+        w.WriteHeader(http.StatusBadRequest)
+        w.Write([]byte(fmt.Sprintf("Docker engine endpoint failed: %v", err)))
+        return nil, nil
     }
 
     nodes := make([]*ImageNode, len(images))
@@ -67,14 +69,7 @@ func imagesHandler(w http.ResponseWriter, r *http.Request) {
     }
 
     root := &ImageNode{}
-    root.Add("", nodes)
+    root.add("", nodes)
 
-    data, err := json.Marshal(&root)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-
-    w.Header().Set("Content-Type", "application/json")
-    w.Write(data)
+    return root, nil
 }

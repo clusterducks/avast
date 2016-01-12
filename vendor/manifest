@@ -82,6 +82,12 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/gorilla/handlers",
+			"repository": "https://github.com/gorilla/handlers",
+			"revision": "7409928170f9f1cbaa874840dc4ff8df161a6c25",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/gorilla/mux",
 			"repository": "https://github.com/gorilla/mux",
 			"revision": "26a6070f849969ba72b72256e9f14cf519751690",

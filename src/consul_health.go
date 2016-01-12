@@ -15,26 +15,28 @@
 package main
 
 import (
-    "encoding/json"
+    "fmt"
     "net/http"
 
-    "github.com/docker/engine-api/types"
+    "github.com/gorilla/mux"
+    "github.com/hashicorp/consul/api"
 )
 
-func infoHandler(w http.ResponseWriter, r *http.Request) {
-    var info types.Info
-    info, err := cli.Info()
+type HealthCheckMeta struct {
+    HealthCheck []*api.HealthCheck  `json:"healthCheck"`
+    Meta        *api.QueryMeta      `json:"meta"`
+}
+
+func consulHealthHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
+    vars := mux.Vars(r)
+
+    options := &api.QueryOptions{Datacenter: vars["dc"]}
+    check, meta, err := consul.Health.Node(vars["name"], options)
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
+        w.WriteHeader(http.StatusBadRequest)
+        w.Write([]byte(fmt.Sprintf("Consul endpoint failed: %v", err)))
+        return nil, nil
     }
 
-    data, err := json.Marshal(&info)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-
-    w.Header().Set("Content-Type", "application/json")
-    w.Write(data)
+    return HealthCheckMeta{check, meta}, nil
 }

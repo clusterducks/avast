@@ -14,9 +14,22 @@
 
 package main
 
-func main() {
-    go wsHub.run()
-    registerClient()
-    registerConsul()
-    startWebserver()
+import (
+    "fmt"
+    "net/http"
+
+    "github.com/gorilla/mux"
+)
+
+func dockerHistoryHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
+    vars := mux.Vars(r)
+
+    history, err := cli.ImageHistory(vars["id"])
+    if err != nil {
+        w.WriteHeader(http.StatusBadRequest)
+        w.Write([]byte(fmt.Sprintf("Docker engine endpoint failed: %v", err)))
+        return nil, nil
+    }
+
+    return history, nil
 }

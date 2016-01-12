@@ -72,18 +72,38 @@ path.link {
   </script>
   <script type="text/javascript">
     $.ajax({
-      url: '/swarm/datacenters',
+      url: '/consul/datacenters'
+    })
+    .done(function(data) {
+      var dc = data;
+      dc.forEach(function(d) {
+        console.log(' --> DATACENTER: ' + d);
+        $.ajax({
+          url: '/consul/nodes/' + d
+        })
+        .done(function(data) {
+          //console.log(data);
+          var nodes = data.nodes;
+          nodes.forEach(function(n) {
+            console.log(' --> NODE: ' + n.node + ' (' + n.address + ')');
+          });
+        });
+      });
+    });
+
+    $.ajax({
+      url: '/docker/images',
     })
     .done(function(data) {
       console.log(data);
     });
 
-    $.ajax({
-      url: '/info',
-    })
-    .done(function(data) {
-      console.log(data);
-    });
+    //$.ajax({
+    //  url: '/info',
+    //})
+    //.done(function(data) {
+    //  console.log(data);
+    //});
   </script>
   <script type="text/javascript">
   /*

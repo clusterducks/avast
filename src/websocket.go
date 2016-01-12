@@ -15,6 +15,7 @@
 package main
 
 import (
+    "fmt"
     "net/http"
     "time"
 
@@ -134,11 +135,12 @@ func (c *connection) writePump() {
     }
 }
 
-func wsHandler(w http.ResponseWriter, r *http.Request) {
+func wsHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
     ws, err := upgrader.Upgrade(w, r, nil)
     if err != nil {
-        http.Error(w, "Could not open websocket connection", http.StatusBadRequest)
-        return
+        w.WriteHeader(http.StatusBadRequest)
+        w.Write([]byte(fmt.Sprintf("Could not open websocket connection: %v", err)))
+        return nil, nil
     }
 
     c := &connection{ws, make(chan []byte, 256)}
@@ -147,4 +149,6 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
     go c.writePump()
     go c.echoEvents()
     c.readPump()
+
+    return true, nil
 }

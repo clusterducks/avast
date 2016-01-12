@@ -14,9 +14,28 @@
 
 package main
 
-func main() {
-    go wsHub.run()
-    registerClient()
-    registerConsul()
-    startWebserver()
+import (
+    "github.com/hashicorp/consul/api"
+)
+
+var consul *Consul
+
+type Consul struct {
+    Client  *api.Client
+    Agent   *api.Agent
+    Catalog *api.Catalog
+    Health  *api.Health
+}
+
+func registerConsul() {
+    client, err := api.NewClient(api.DefaultConfig())
+    if err != nil {
+    }
+
+    consul = &Consul{
+        client,
+        client.Agent(),
+        client.Catalog(),
+        client.Health(),
+    }
 }

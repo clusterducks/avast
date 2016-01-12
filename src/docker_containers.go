@@ -15,43 +15,33 @@
 package main
 
 import (
-    "encoding/json"
+    "fmt"
     "net/http"
 
     "github.com/docker/engine-api/types"
     "github.com/gorilla/mux"
 )
 
-func containersHandler(w http.ResponseWriter, r *http.Request) {
+func dockerContainersHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
     options := types.ContainerListOptions{All: true}
     containers, err := cli.ContainerList(options)
     if err != nil {
-        panic(err)
+        w.WriteHeader(http.StatusBadRequest)
+        w.Write([]byte(fmt.Sprintf("Docker engine endpoint failed: %v", err)))
+        return nil, nil
     }
 
-    data, err := json.Marshal(&containers)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-
-    w.Header().Set("Content-Type", "application/json")
-    w.Write(data)
+    return containers, nil
 }
 
-func containerHandler(w http.ResponseWriter, r *http.Request) {
+func dockerContainerHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
     vars := mux.Vars(r)
     container, err := cli.ContainerInspect(vars["name"])
     if err != nil {
-        panic(err)
+        w.WriteHeader(http.StatusBadRequest)
+        w.Write([]byte(fmt.Sprintf("Docker engine endpoint failed: %v", err)))
+        return nil, nil
     }
 
-    data, err := json.Marshal(&container)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-
-    w.Header().Set("Content-Type", "application/json")
-    w.Write(data)
+    return container, nil
 }

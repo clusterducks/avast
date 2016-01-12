@@ -15,26 +15,20 @@
 package main
 
 import (
-    "encoding/json"
+    "fmt"
     "net/http"
 
-    "github.com/gorilla/mux"
+    "github.com/docker/engine-api/types"
 )
 
-func historyHandler(w http.ResponseWriter, r *http.Request) {
-    vars := mux.Vars(r)
-    history, err := cli.ImageHistory(vars["id"])
+func dockerInfoHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
+    var info types.Info
+    info, err := cli.Info()
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
+        w.WriteHeader(http.StatusBadRequest)
+        w.Write([]byte(fmt.Sprintf("Docker engine endpoint failed: %v", err)))
+        return nil, nil
     }
 
-    data, err := json.Marshal(&history)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-
-    w.Header().Set("Content-Type", "application/json")
-    w.Write(data)
+    return info, nil
 }
