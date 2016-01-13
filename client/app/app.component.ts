@@ -1,7 +1,7 @@
 import {Component} from 'angular2/core';
 import {RouteConfig, ROUTER_DIRECTIVES} from 'angular2/router';
-import {DashboardComponent} from './dashboard.component';
 import {ConsulService} from './consul.service';
+import {DashboardComponent} from './dashboard.component';
 import {NodeDetailComponent} from './node-detail.component';
 import {NodesComponent} from './nodes.component';
 
