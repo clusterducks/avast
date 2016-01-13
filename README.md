@@ -3,7 +3,7 @@
 
 ![Avast](https://media.giphy.com/media/E8KFBhPh2s3ra/giphy.gif)
 
-## Server-side
+# Server-side
 
 ### Building
 
@@ -15,35 +15,82 @@ get get
 go build -o bin/avast github.com/bfowle/avast/src/
 ```
 
-^-- `@TODO` change to **make**
-
 ### Running
 
 ```
 AVAST_API_VERSION=v1 \
   AVAST_ADDR=:8080 \
-  DOCKER_HOST=tcp://123.45.67.890:2375 \
+  DOCKER_HOST=tcp://1.1.1.1:2375 \
   DOCKER_API_VERSION=v1.21 \
-  CONSUL_HTTP_ADDR=123.45.67.890:8500 \
+  CONSUL_HTTP_ADDR=1.1.1.1:8500 \
   bin/avast
 ```
   
-## Client-side
+# Client-side
+
+> Located in the `client/` folder
+
+### Dependencies
+
+- `node` (v4.1.x+) and `npm` (2.14.x+)
+- (Development) global install of the following:
+```
+npm i --global webpack \
+  webpack-dev-server \
+  karma \
+  protractor \
+  typings \
+  typescript
+```
+
+### Installing
+
+```
+npm i
+# `typings install` will be run in the postinstall hook
+```
+
+### Running
+
+Starting the development server
+
+```
+npm run server
+# http://0.0.0.0:300/
+# or IPv6 http://[::1]:3000
+```
+
+Watch and build files
+
+```
+npm run watch
+```
+
+Running tests
+
+````
+npm run test
+```
+
+Starting the e2e webdriver
+
+```
+npm run webdriver:update
+npm run webdriver:start
+```
+
+Running e2e tests
+
+```
+npm run e2e
+```
 
 ### Building
 
 ```
-cd client && npm i
+# development
+npm run build:dev
+
+# production
+npm run build:prod
 ```
-
-^-- `@TODO` change to **make**
-
-### Running
-
-```
-npm start # in client/
-```
-
-## Production
-
-TBD--

@@ -1,6 +1,7 @@
 import {Injectable} from 'angular2/core';
 import {Http, Response} from 'angular2/http';
-import {API_VERSION} from './constants';
+
+import {API_VERSION} from '../../constants';
 
 @Injectable()
 export class ConsulService {
@@ -13,7 +14,7 @@ export class ConsulService {
       .map((res: Response) => res.json());
   }
 
-  getNodes(dc: string='') {
+  getNodes(dc: string = '') {
     let url = '/api/' + API_VERSION + '/consul/nodes' + (dc ? '/' + dc : '');
     return this.http.get(url)
       .map((res: Response) => res.json());

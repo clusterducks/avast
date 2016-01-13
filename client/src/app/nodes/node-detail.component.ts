@@ -1,13 +1,15 @@
 import {Component, OnInit} from 'angular2/core';
 import {RouteParams} from 'angular2/router';
-import {SwarmNode} from './swarm-node';
-import {ConsulService} from './consul.service';
+
+import {ConsulService} from '../consul/providers/consul.service';
+import {SwarmNode} from './interfaces/swarm-node';
 
 @Component({
   selector: 'avast-node-detail',
-  templateUrl: 'app/node-detail.component.html',
-  styleUrls: ['app/node-detail.component.css'],
-  //inputs: ['node'],
+  template: require('./node-detail.component.html'),
+  styles: [
+    require('./node-detail.component.css')
+  ]
 })
 
 export class NodeDetailComponent implements OnInit {
@@ -27,5 +29,5 @@ export class NodeDetailComponent implements OnInit {
 
   goBack() {
     window.history.back();
-  } 
+  }
 }

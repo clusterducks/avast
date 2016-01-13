@@ -1,12 +1,15 @@
 import {Component, OnInit} from 'angular2/core';
 import {Router} from 'angular2/router';
-import {SwarmNode} from './swarm-node';
-import {ConsulService} from './consul.service';
+
+import {ConsulService} from '../consul/providers/consul.service';
+import {SwarmNode} from '../nodes/interfaces/swarm-node';
 
 @Component({
   selector: 'avast-dashboard',
-  templateUrl: 'app/dashboard.component.html',
-  styleUrls: ['app/dashboard.component.css'],
+  template: require('./dashboard.component.html'),
+  styles: [
+    require('./dashboard.component.css')
+  ],
 })
 
 export class DashboardComponent implements OnInit {
@@ -41,4 +44,4 @@ export class DashboardComponent implements OnInit {
   logError(err) {
     console.log(err);
   }
-} 
+}

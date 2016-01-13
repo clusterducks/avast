@@ -1,13 +1,16 @@
 import {Component, OnInit} from 'angular2/core';
 import {Router} from 'angular2/router';
-import {SwarmNode} from './swarm-node';
-import {ConsulService} from './consul.service';
+
+import {ConsulService} from '../consul/providers/consul.service';
 import {NodeDetailComponent} from './node-detail.component';
+import {SwarmNode} from './interfaces/swarm-node';
 
 @Component({
   selector: 'avast-nodes',
-  templateUrl: 'app/nodes.component.html',
-  styleUrls: ['app/nodes.component.css'],
+  template: require('./nodes.component.html'),
+  styles: [
+    require('./nodes.component.css')
+  ],
   directives: [NodeDetailComponent]
 })
 

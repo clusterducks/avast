@@ -1,3 +1,21 @@
-node_modules
-bower_components
-app/*.map
+# logs
+logs
+*.log
+
+# node files
+/node_modules
+/bower_components
+
+# typing
+/typings
+/tsd_typings
+
+# dist
+/dist
+.webpack.json
+
+# coverage
+/coverage
+
+# OS
+.DS_Store

@@ -1,9 +1,10 @@
 import {Component} from 'angular2/core';
 import {RouteConfig, ROUTER_DIRECTIVES} from 'angular2/router';
-import {ConsulService} from './consul.service';
-import {DashboardComponent} from './dashboard.component';
-import {NodeDetailComponent} from './node-detail.component';
-import {NodesComponent} from './nodes.component';
+
+import {ConsulService} from './consul/providers/consul.service';
+import {DashboardComponent} from './dashboard/dashboard.component';
+import {NodeDetailComponent} from './nodes/node-detail.component';
+import {NodesComponent} from './nodes/nodes.component';
 
 @Component({
   selector: 'avast',
@@ -15,7 +16,9 @@ import {NodesComponent} from './nodes.component';
     <a [routerLink]="['Images']">Images</a>
     <router-outlet></router-outlet>
   `,
-  styleUrls: ['app/app.component.css'],
+  styles: [
+    require('./app.component.css')
+  ],
   directives: [ROUTER_DIRECTIVES],
   providers: [ConsulService],
 })
@@ -49,5 +52,5 @@ import {NodesComponent} from './nodes.component';
 ])
 
 export class AppComponent {
-  public title = 'Avast'
+  public title = 'Avast';
 }
