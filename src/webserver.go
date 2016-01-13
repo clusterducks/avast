@@ -49,6 +49,7 @@ func startWebserver() {
     router.HandleFunc("/consul/datacenters",        wrap(consulDatacentersHandler))
     router.HandleFunc("/consul/nodes",              wrap(consulNodesHandler))
     router.HandleFunc("/consul/nodes/{dc}",         wrap(consulNodesHandler))
+    router.HandleFunc("/consul/node/{name}",        wrap(consulNodeHandler))
     router.HandleFunc("/consul/health/{name}",      wrap(consulHealthHandler))
     router.HandleFunc("/consul/health/{name}/{dc}", wrap(consulHealthHandler))
 
@@ -66,6 +67,7 @@ func wrap(handler func(w http.ResponseWriter, r *http.Request) (interface{}, err
     f := func(w http.ResponseWriter, r *http.Request) {
         setHeaders(w, map[string]string{
             "Content-Type": "text/html; charset=utf8",
+            "Access-Control-Allow-Origin": "*",
         })
 
         obj, err := handler(w, r)

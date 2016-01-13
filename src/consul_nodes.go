@@ -23,20 +23,15 @@ import (
 )
 
 type Node struct {
-    Address string  `json:"address"`
-    Node    string  `json:"node"`
-}
-
-type NodesMeta struct {
-    Nodes   []*Node         `json:"nodes"`
-    Meta    *api.QueryMeta  `json:"meta"`
+    Address   string    `json:"address"`
+    Node      string    `json:"node"`
 }
 
 func consulNodesHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
     vars := mux.Vars(r)
-
     options := &api.QueryOptions{Datacenter: vars["dc"]}
-    nodes, meta, err := consul.Catalog.Nodes(options)
+
+    nodes, _, err := consul.Catalog.Nodes(options)
     if err != nil {
         w.WriteHeader(http.StatusBadRequest)
         w.Write([]byte(fmt.Sprintf("Consul endpoint failed: %v", err)))
@@ -48,5 +43,41 @@ func consulNodesHandler(w http.ResponseWriter, r *http.Request) (interface{}, er
         cnodes = append(cnodes, &Node{n.Address, n.Node})
     }
 
-    return NodesMeta{cnodes, meta}, nil
+    return cnodes, nil
+}
+
+type ConsulNode struct {
+    *Node
+    Services  []*api.AgentService  `json:"services"`
+    Checks    []*api.HealthCheck   `json:"checks"`
+}
+
+func consulNodeHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
+    vars := mux.Vars(r)
+    options := &api.QueryOptions{Datacenter: vars["dc"]}
+
+    node, _, err := consul.Catalog.Node(vars["name"], options)
+    if err != nil {
+        w.WriteHeader(http.StatusBadRequest)
+        w.Write([]byte(fmt.Sprintf("Consul endpoint failed: %v", err)))
+        return nil, nil
+    }
+
+    health, _, err := consul.Health.Node(vars["name"], options)
+    if err != nil {
+        w.WriteHeader(http.StatusBadRequest)
+        w.Write([]byte(fmt.Sprintf("Consul endpoint failed: %v", err)))
+        return nil, nil
+    }
+
+    services := make([]*api.AgentService, 0, len(node.Services))
+    for  _, s := range node.Services {
+        services = append(services, s)
+    }
+
+    return &ConsulNode{
+        &Node{node.Node.Address, node.Node.Node},
+        services,
+        health,
+    }, nil
 }

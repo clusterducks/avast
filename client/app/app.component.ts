@@ -1,21 +1,23 @@
 import {Component} from 'angular2/core';
 import {RouteConfig, ROUTER_DIRECTIVES} from 'angular2/router';
 import {DashboardComponent} from './dashboard.component';
-import {HeroService} from './hero.service';
-import {HeroDetailComponent} from './hero-detail.component';
-import {HeroesComponent} from './heroes.component';
+import {ConsulService} from './consul.service';
+import {NodeDetailComponent} from './node-detail.component';
+import {NodesComponent} from './nodes.component';
 
 @Component({
   selector: 'avast',
   template: `
     <h1>{{title}}</h1>
     <a [routerLink]="['Dashboard']">Dashboard</a>
-    <a [routerLink]="['Heroes']">Heroes</a>
+    <a [routerLink]="['Nodes']">Nodes</a>
+    <a [routerLink]="['Containers']">Containers</a>
+    <a [routerLink]="['Images']">Images</a>
     <router-outlet></router-outlet>
   `,
   styleUrls: ['app/app.component.css'],
   directives: [ROUTER_DIRECTIVES],
-  providers: [HeroService],
+  providers: [ConsulService],
 })
 
 @RouteConfig([
@@ -28,13 +30,21 @@ import {HeroesComponent} from './heroes.component';
     component: DashboardComponent,
     useAsDefault: true,
   }, {
-    path: '/heroes',
-    name: 'Heroes',
-    component: HeroesComponent,
+    path: '/nodes',
+    name: 'Nodes',
+    component: NodesComponent,
   }, {
-    path: '/detail/:id',
-    name: 'HeroDetail',
-    component: HeroDetailComponent,
+    path: '/containers',
+    name: 'Containers',
+    component: NodesComponent,
+  }, {
+    path: '/images',
+    name: 'Images',
+    component: NodesComponent,
+  }, {
+    path: '/node/detail/:name',
+    name: 'NodeDetail',
+    component: NodeDetailComponent,
   }
 ])
 

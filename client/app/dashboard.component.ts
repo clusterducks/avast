@@ -1,7 +1,7 @@
-import {Component, OnInit} from 'angular2/core'
-import {Router} from 'angular2/router'
-import {Hero} from './hero'
-import {HeroService} from './hero.service'
+import {Component, OnInit} from 'angular2/core';
+import {Router} from 'angular2/router';
+import {SwarmNode} from './swarm-node';
+import {ConsulService} from './consul.service';
 
 @Component({
   selector: 'avast-dashboard',
@@ -10,19 +10,35 @@ import {HeroService} from './hero.service'
 })
 
 export class DashboardComponent implements OnInit {
-  public heroes: Hero[] = [];
+  public datacenters: string[];
+  public nodes: SwarmNode[];
 
-  constructor (private _heroService: HeroService, private _router: Router) {
+  constructor (private _consulService: ConsulService,
+               private _router: Router) {
   }
 
   ngOnInit() {
-    this._heroService.getHeroes()
-      .then(heroes => this.heroes = heroes.slice(1, 5));
+    this.getDatacenters();
   }
 
-  gotoDetail(hero: Hero) {
-    this._router.navigate(['HeroDetail', {
-      id: hero.id
-    }]);
+  getDatacenters() {
+    this._consulService.getDatacenters()
+      .subscribe(
+        res => this.datacenters = res,
+        err => this.logError(err)
+      );
+  }
+
+  setDatacenter(dc: string) {
+    this._consulService.getNodes(dc)
+      .subscribe(res => this.nodes = res);
+  }
+
+  gotoNode(name: string) {
+    this._router.navigate(['NodeDetail', { name: name }]);
+  }
+
+  logError(err) {
+    console.log(err);
   }
 } 

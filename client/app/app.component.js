@@ -1,4 +1,4 @@
-System.register(['angular2/core', 'angular2/router', './dashboard.component', './hero.service', './hero-detail.component', './heroes.component'], function(exports_1) {
+System.register(['angular2/core', 'angular2/router', './dashboard.component', './consul.service', './node-detail.component', './nodes.component'], function(exports_1) {
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
         var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
         if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -8,7 +8,7 @@ System.register(['angular2/core', 'angular2/router', './dashboard.component', '.
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, router_1, dashboard_component_1, hero_service_1, hero_detail_component_1, heroes_component_1;
+    var core_1, router_1, dashboard_component_1, consul_service_1, node_detail_component_1, nodes_component_1;
     var AppComponent;
     return {
         setters:[
@@ -21,14 +21,14 @@ System.register(['angular2/core', 'angular2/router', './dashboard.component', '.
             function (dashboard_component_1_1) {
                 dashboard_component_1 = dashboard_component_1_1;
             },
-            function (hero_service_1_1) {
-                hero_service_1 = hero_service_1_1;
+            function (consul_service_1_1) {
+                consul_service_1 = consul_service_1_1;
             },
-            function (hero_detail_component_1_1) {
-                hero_detail_component_1 = hero_detail_component_1_1;
+            function (node_detail_component_1_1) {
+                node_detail_component_1 = node_detail_component_1_1;
             },
-            function (heroes_component_1_1) {
-                heroes_component_1 = heroes_component_1_1;
+            function (nodes_component_1_1) {
+                nodes_component_1 = nodes_component_1_1;
             }],
         execute: function() {
             AppComponent = (function () {
@@ -38,10 +38,10 @@ System.register(['angular2/core', 'angular2/router', './dashboard.component', '.
                 AppComponent = __decorate([
                     core_1.Component({
                         selector: 'avast',
-                        template: "\n    <h1>{{title}}</h1>\n    <a [routerLink]=\"['Dashboard']\">Dashboard</a>\n    <a [routerLink]=\"['Heroes']\">Heroes</a>\n    <router-outlet></router-outlet>\n  ",
+                        template: "\n    <h1>{{title}}</h1>\n    <a [routerLink]=\"['Dashboard']\">Dashboard</a>\n    <a [routerLink]=\"['Nodes']\">Nodes</a>\n    <a [routerLink]=\"['Containers']\">Containers</a>\n    <a [routerLink]=\"['Images']\">Images</a>\n    <router-outlet></router-outlet>\n  ",
                         styleUrls: ['app/app.component.css'],
                         directives: [router_1.ROUTER_DIRECTIVES],
-                        providers: [hero_service_1.HeroService],
+                        providers: [consul_service_1.ConsulService],
                     }),
                     router_1.RouteConfig([
                         {
@@ -53,13 +53,21 @@ System.register(['angular2/core', 'angular2/router', './dashboard.component', '.
                             component: dashboard_component_1.DashboardComponent,
                             useAsDefault: true,
                         }, {
-                            path: '/heroes',
-                            name: 'Heroes',
-                            component: heroes_component_1.HeroesComponent,
+                            path: '/nodes',
+                            name: 'Nodes',
+                            component: nodes_component_1.NodesComponent,
                         }, {
-                            path: '/detail/:id',
-                            name: 'HeroDetail',
-                            component: hero_detail_component_1.HeroDetailComponent,
+                            path: '/containers',
+                            name: 'Containers',
+                            component: nodes_component_1.NodesComponent,
+                        }, {
+                            path: '/images',
+                            name: 'Images',
+                            component: nodes_component_1.NodesComponent,
+                        }, {
+                            path: '/node/detail/:name',
+                            name: 'NodeDetail',
+                            component: node_detail_component_1.NodeDetailComponent,
                         }
                     ]), 
                     __metadata('design:paramtypes', [])

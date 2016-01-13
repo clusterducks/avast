@@ -1,0 +1,14 @@
+<div>
+  <h2>Nodes</h2>
+  <ul class="nodes">
+    <li *ngFor="#n of nodes"
+      [class.selected]="n === selectedNode"
+      (click)="onSelect(n)">
+      <span class="badge">{{n.node}}</span> {{n.address}}
+    </li>
+  </ul>
+  <div *ngIf="selectedNode">
+    <h2>{{selectedNode.name}}</h2>
+    <button (click)="gotoDetail()">View Details</button>
+  </div>
+</div>
