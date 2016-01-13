@@ -1,7 +1,7 @@
 import {Injectable} from 'angular2/core';
 import {Http, Response} from 'angular2/http';
 
-import {API_VERSION} from '../../constants';
+import {API_VERSION} from '../../../constants';
 
 @Injectable()
 export class ConsulService {

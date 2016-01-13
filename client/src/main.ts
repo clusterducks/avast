@@ -4,8 +4,8 @@ import {ROUTER_PROVIDERS, LocationStrategy, HashLocationStrategy} from 'angular2
 import {HTTP_PROVIDERS} from 'angular2/http';
 import 'rxjs/add/operator/map';
 
-import {AppComponent} from './app/app.component';
-import {ConsulService} from './app/consul/providers/consul.service';
+import {AppComponent} from './app/components/app.component';
+import {ConsulService} from './app/components/consul/providers/consul.service';
 
 document.addEventListener('DOMContentLoaded', function main() {
   bootstrap(AppComponent, [

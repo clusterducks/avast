@@ -56,7 +56,7 @@ Starting the development server
 
 ```
 npm run server
-# http://0.0.0.0:300/
+# http://0.0.0.0:3000/
 # or IPv6 http://[::1]:3000
 ```
 
@@ -94,3 +94,7 @@ npm run build:dev
 # production
 npm run build:prod
 ```
+
+# TODO
+
+- Split repo into `avast-server` and `avast-ui` repos
