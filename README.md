@@ -7,26 +7,42 @@
 
 ### Building
 
-```go build -o bin/avast github.com/bfowle/avast/src/```
+```
+get get
+# recommended:
+# gb vendor fetch --all
 
-^-- TODO: change to make
+go build -o bin/avast github.com/bfowle/avast/src/
+```
+
+^-- `@TODO:` change to **make**
 
 ### Running
 
-```DOCKER_HOST=tcp://123.45.67.890:1234 \
+```
+DOCKER_HOST=tcp://123.45.67.890:1234 \
   DOCKER_API_VERSION=v1.21 \
   CONSUL_HTTP_ADDR=123.45.67.890:8500 \
-  bin/avast```
+  bin/avast
+```
   
 ## Client-side
 
 ### Building
 
-```npm install```
+```
+cd client
+npm install
+```
+
+^-- `@TODO:` change to **make**
 
 ### Running
 
-```npm start```
+```
+# in client/
+npm start
+```
 
 ## Production
 
