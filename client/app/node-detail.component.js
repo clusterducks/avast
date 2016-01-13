@@ -30,8 +30,8 @@ System.register(['angular2/core', 'angular2/router', './consul.service'], functi
                 NodeDetailComponent.prototype.ngOnInit = function () {
                     var _this = this;
                     if (!this.node) {
-                        var name_1 = this._routeParams.get('name');
-                        this._consulService.getNode(name_1)
+                        var name = this._routeParams.get('name');
+                        this._consulService.getNode(name)
                             .subscribe(function (res) { return _this.node = res; });
                     }
                 };
