@@ -15,12 +15,14 @@ get get
 go build -o bin/avast github.com/bfowle/avast/src/
 ```
 
-^-- `@TODO:` change to **make**
+^-- `@TODO` change to **make**
 
 ### Running
 
 ```
-DOCKER_HOST=tcp://123.45.67.890:1234 \
+AVAST_API_VERSION=v1 \
+  AVAST_ADDR=:8080 \
+  DOCKER_HOST=tcp://123.45.67.890:2375 \
   DOCKER_API_VERSION=v1.21 \
   CONSUL_HTTP_ADDR=123.45.67.890:8500 \
   bin/avast
@@ -31,17 +33,15 @@ DOCKER_HOST=tcp://123.45.67.890:1234 \
 ### Building
 
 ```
-cd client
-npm install
+cd client && npm i
 ```
 
-^-- `@TODO:` change to **make**
+^-- `@TODO` change to **make**
 
 ### Running
 
 ```
-# in client/
-npm start
+npm start # in client/
 ```
 
 ## Production

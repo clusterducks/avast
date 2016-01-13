@@ -16,8 +16,9 @@ package main
 
 import (
     "encoding/json"
-    "flag"
+    "fmt"
     "net/http"
+    "os"
     "strings"
     "text/template"
 
@@ -25,9 +26,12 @@ import (
     "github.com/gorilla/mux"
 )
 
-var router *mux.Router
-var addr = flag.String("addr", ":8080", "http service address")
-var indexTpl = template.Must(template.ParseFiles("index.html"))
+var (
+  router *mux.Router
+  addr string
+  apiVersion string
+  indexTpl = template.Must(template.ParseFiles("index.html"))
+)
 
 func setHeaders(w http.ResponseWriter, headers map[string]string) {
     for k, v := range headers {
@@ -35,26 +39,41 @@ func setHeaders(w http.ResponseWriter, headers map[string]string) {
     }
 }
 
+func processEnv() {
+    if addr = os.Getenv("AVAST_ADDR"); addr == "" {
+      addr = ":8080"
+    }
+
+    if apiVersion = os.Getenv("AVAST_API_VERSION"); apiVersion == "" {
+      apiVersion = "v1"
+    }
+}
+
 func startWebserver() {
-    flag.Parse()
+    processEnv()
 
     router = mux.NewRouter()
-    router.HandleFunc("/",                          wrap(indexHandler))
-    router.HandleFunc("/ws",                        wrap(wsHandler))
-    router.HandleFunc("/docker/containers",         wrap(dockerContainersHandler))
-    router.HandleFunc("/docker/container/{name}",   wrap(dockerContainerHandler))
-    router.HandleFunc("/docker/images",             wrap(dockerImagesHandler))
-    router.HandleFunc("/docker/history/{id}",       wrap(dockerHistoryHandler))
-    router.HandleFunc("/docker/info",               wrap(dockerInfoHandler))
-    router.HandleFunc("/consul/datacenters",        wrap(consulDatacentersHandler))
-    router.HandleFunc("/consul/nodes",              wrap(consulNodesHandler))
-    router.HandleFunc("/consul/nodes/{dc}",         wrap(consulNodesHandler))
-    router.HandleFunc("/consul/node/{name}",        wrap(consulNodeHandler))
-    router.HandleFunc("/consul/health/{name}",      wrap(consulHealthHandler))
-    router.HandleFunc("/consul/health/{name}/{dc}", wrap(consulHealthHandler))
+    router.HandleFunc("/",   wrap(indexHandler))
+    router.HandleFunc("/ws", wrap(wsHandler))
+
+    dockerRouter := router.PathPrefix(fmt.Sprintf("/api/%v/docker", apiVersion)).Subrouter()
+    dockerRouter.HandleFunc("/containers",       wrap(dockerContainersHandler))
+    dockerRouter.HandleFunc("/container/{name}", wrap(dockerContainerHandler))
+    dockerRouter.HandleFunc("/images",           wrap(dockerImagesHandler))
+    dockerRouter.HandleFunc("/history/{id}",     wrap(dockerHistoryHandler))
+    dockerRouter.HandleFunc("/info",             wrap(dockerInfoHandler))
+
+    consulRouter := router.PathPrefix(fmt.Sprintf("/api/%v/consul", apiVersion)).Subrouter()
+    consulRouter.HandleFunc("/datacenters",        wrap(consulDatacentersHandler))
+    consulRouter.HandleFunc("/nodes",              wrap(consulNodesHandler))
+    consulRouter.HandleFunc("/nodes/{dc}",         wrap(consulNodesHandler))
+    consulRouter.HandleFunc("/node/{name}",        wrap(consulNodeHandler))
+    consulRouter.HandleFunc("/health/{name}",      wrap(consulHealthHandler))
+    consulRouter.HandleFunc("/health/{name}/{dc}", wrap(consulHealthHandler))
 
     http.Handle("/", router)
-    panic(http.ListenAndServe(*addr, handlers.CompressHandler(router)))
+    loggedRouter := handlers.CombinedLoggingHandler(os.Stdout, router)
+    panic(http.ListenAndServe(addr, handlers.CompressHandler(loggedRouter)))
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {

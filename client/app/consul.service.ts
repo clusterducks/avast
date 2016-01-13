@@ -1,5 +1,6 @@
 import {Injectable} from 'angular2/core';
 import {Http, Response} from 'angular2/http';
+import {API_VERSION} from './constants';
 
 @Injectable()
 export class ConsulService {
@@ -8,18 +9,18 @@ export class ConsulService {
   }
 
   getDatacenters() {
-    return this.http.get('http://localhost:8080/consul/datacenters')
+    return this.http.get('/api/' + API_VERSION + '/consul/datacenters')
       .map((res: Response) => res.json());
   }
 
   getNodes(dc: string='') {
-    let url = 'http://localhost:8080/consul/nodes' + (dc ? '/' + dc : '');
+    let url = '/api/' + API_VERSION + '/consul/nodes' + (dc ? '/' + dc : '');
     return this.http.get(url)
       .map((res: Response) => res.json());
   }
 
   getNode(name: string) {
-    return this.http.get('http://localhost:8080/consul/node/' + name)
+    return this.http.get('/api/' + API_VERSION + '/consul/node/' + name)
       .map((res: Response) => res.json());
   }
 }
