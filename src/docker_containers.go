@@ -36,6 +36,7 @@ func dockerContainersHandler(w http.ResponseWriter, r *http.Request) (interface{
 
 func dockerContainerHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
     vars := mux.Vars(r)
+
     container, err := cli.ContainerInspect(vars["name"])
     if err != nil {
         w.WriteHeader(http.StatusBadRequest)

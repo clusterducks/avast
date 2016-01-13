@@ -15,20 +15,13 @@
 package main
 
 import (
-    "flag"
-
     "github.com/docker/engine-api/client"
 )
 
 var cli *client.Client
-var defaultHeaders = map[string]string{"User-Agent": "engine-api-cli-1.0"}
-var sock = flag.String("sock", "unix:///var/run/docker.sock", "docker socket path")
 
 func registerClient() {
-    flag.Parse()
-
     var err error
-    //cli, err = client.NewClient(*sock, "v1.21", nil, defaultHeaders)
     cli, err = client.NewEnvClient()
     if err != nil {
         panic(err)
