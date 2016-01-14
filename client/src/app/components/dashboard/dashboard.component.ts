@@ -1,6 +1,8 @@
 import {Component, OnInit} from 'angular2/core';
 import {Router} from 'angular2/router';
+import {AppStore} from 'angular2-redux';
 
+import {ConsulActions} from '../../actions/consul.actions';
 import {ConsulService} from '../consul/providers/consul.service';
 import {SwarmNode} from '../nodes/interfaces/swarm-node';
 
@@ -15,21 +17,32 @@ import {SwarmNode} from '../nodes/interfaces/swarm-node';
 export class DashboardComponent implements OnInit {
   public datacenters: string[];
   public nodes: SwarmNode[];
+  private isFetchingDatacenters = false;
+  private isFetchingNodes = false;
 
-  constructor (private _consulService: ConsulService,
-               private _router: Router) {
+  constructor (private _router: Router,
+               private _appStore: AppStore,
+               private _consulActions: ConsulActions,
+               private _consulService: ConsulService) {
   }
 
   ngOnInit() {
-    this.getDatacenters();
+    //this.getDatacenters();
+
+    this._appStore.subscribe((state) => {
+      this.datacenters = state.datacenters;
+      this.isFetchingDatacenters = state.datacenters.isFetchingDatacenters;
+    });
+
+    this._appStore.dispatch(this._consulActions.fetchDatacenters());
   }
 
   getDatacenters() {
-    this._consulService.getDatacenters()
-      .subscribe(
-        res => this.datacenters = res,
-        err => this.logError(err)
-      );
+    //this._consulService.getDatacenters()
+    //  .subscribe(
+    //    res => this.datacenters = res,
+    //    err => this.logError(err)
+    //  );
   }
 
   setDatacenter(dc: string) {

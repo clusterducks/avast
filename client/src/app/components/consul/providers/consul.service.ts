@@ -1,6 +1,7 @@
 import {Injectable} from 'angular2/core';
 import {Http, Response} from 'angular2/http';
 
+// @TODO: pull this out into a UrlBuilder service
 import {API_VERSION} from '../../../constants';
 
 @Injectable()

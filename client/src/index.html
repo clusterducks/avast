@@ -14,11 +14,9 @@
 </head>
 <body>
   <avast>Loading...</avast>
-
   {% if (o.webpackConfig.metadata.ENV === 'development') { %}
   <script src="http://{%= o.webpackConfig.metadata.host %}:{%= o.webpackConfig.metadata.port %}/webpack-dev-server.js"></script>
   {% } %}
-
   {% for (var chunk in o.htmlWebpackPlugin.files.chunks) { %}
   <script src="{%= o.htmlWebpackPlugin.files.chunks[chunk].entry %}"></script>
   {% } %}
