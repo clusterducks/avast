@@ -6,7 +6,7 @@
   "ignoreCompilerErrors": "true",
   "experimentalDecorators": "true",
   "emitDecoratorMetadata": "true",
-  "target": "ES6",
+  "target": "ES5",
   "moduleResolution": "node",
   "preserveConstEnums": "true",
   "stripInternal": "true",

@@ -95,6 +95,13 @@ npm run build:dev
 npm run build:prod
 ```
 
+### Generating Documentation
+
+```
+npm run docs
+# located at `client/docs/index.html`
+```
+
 # TODO
 
 - Split repo into `avast-server` and `avast-ui` repos
