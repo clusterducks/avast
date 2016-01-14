@@ -30,7 +30,7 @@ export class ConsulActions extends Actions {
     return {type: REQUEST_DATACENTERS};
   }
 
-  receiveDatacenters(datacenters) {
+  receiveDatacenters(datacenters: string[]) {
     return {
       type: RECEIVE_DATACENTERS,
       datacenters

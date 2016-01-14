@@ -11,11 +11,11 @@ import {SwarmNode} from '../nodes/interfaces/swarm-node';
   template: require('./dashboard.component.html'),
   styles: [
     require('./dashboard.component.css')
-  ],
+  ]
 })
 
 export class DashboardComponent implements OnInit {
-  public datacenters: string[];
+  public datacenters: string[] = [];
   public nodes: SwarmNode[];
   private isFetchingDatacenters = false;
   private isFetchingNodes = false;
@@ -27,22 +27,12 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit() {
-    //this.getDatacenters();
-
     this._appStore.subscribe((state) => {
       this.datacenters = state.datacenters;
-      this.isFetchingDatacenters = state.datacenters.isFetchingDatacenters;
+      this.isFetchingDatacenters = state.isFetchingDatacenters;
     });
 
     this._appStore.dispatch(this._consulActions.fetchDatacenters());
-  }
-
-  getDatacenters() {
-    //this._consulService.getDatacenters()
-    //  .subscribe(
-    //    res => this.datacenters = res,
-    //    err => this.logError(err)
-    //  );
   }
 
   setDatacenter(dc: string) {
@@ -52,9 +42,5 @@ export class DashboardComponent implements OnInit {
 
   gotoNode(name: string) {
     this._router.navigate(['NodeDetail', { name: name }]);
-  }
-
-  logError(err) {
-    console.log(err);
   }
 }

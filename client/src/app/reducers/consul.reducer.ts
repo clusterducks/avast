@@ -6,11 +6,13 @@ export default (state = [], action: any = {}) => {
       return Object.assign({}, state, {
         isFetchingDatacenters: true
       });
+
     case ConsulActions.RECEIVE_DATACENTERS:
       return Object.assign({}, state, {
-        isFetchingDatacenters: false,
-        list: action.datacenters
+        datacenters: action.datacenters,
+        isFetchingDatacenters: false
       });
+
     default:
       return state;
   }
