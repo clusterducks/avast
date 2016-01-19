@@ -8,12 +8,12 @@
 ### Dependencies
 
 - `go` (1.4+)
-- Vendored dependencies through `gb`
 
 ### Building
 
 ```
-go build -o bin/avast ./src/
+go get
+go build -o bin/avast .
 ```
 
 ### Running
