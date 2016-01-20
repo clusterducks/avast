@@ -89,12 +89,8 @@ func (cr *ConsulRegistry) DatacentersHandler(w http.ResponseWriter, r *http.Requ
 
 func (cr *ConsulRegistry) NodesHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
     vars := mux.Vars(r)
-    dc := vars["dc"];
-    if dc == "" {
-        dc = datacenter
-    }
 
-    options := &consulapi.QueryOptions{Datacenter: dc}
+    options := &consulapi.QueryOptions{Datacenter: vars["dc"]}
     nodes, _, err := cr.catalog.Nodes(options)
     if err != nil {
         w.WriteHeader(http.StatusBadRequest)
@@ -115,12 +111,8 @@ func (cr *ConsulRegistry) NodesHandler(w http.ResponseWriter, r *http.Request) (
 
 func (cr *ConsulRegistry) NodeHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
     vars := mux.Vars(r)
-    dc := vars["dc"];
-    if dc == "" {
-        dc = datacenter
-    }
 
-    options := &consulapi.QueryOptions{Datacenter: datacenter}
+    options := &consulapi.QueryOptions{}
     node, _, err := cr.catalog.Node(vars["name"], options)
     if err != nil {
         w.WriteHeader(http.StatusBadRequest)
@@ -155,12 +147,8 @@ func (cr *ConsulRegistry) NodeHandler(w http.ResponseWriter, r *http.Request) (i
 
 func (cr *ConsulRegistry) HealthHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
     vars := mux.Vars(r)
-    dc := vars["dc"];
-    if dc == "" {
-        dc = datacenter
-    }
 
-    options := &consulapi.QueryOptions{Datacenter: datacenter}
+    options := &consulapi.QueryOptions{}
     check, _, err := cr.health.Node(vars["name"], options)
     if err != nil {
         w.WriteHeader(http.StatusBadRequest)
