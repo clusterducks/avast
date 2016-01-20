@@ -89,8 +89,12 @@ func (cr *ConsulRegistry) DatacentersHandler(w http.ResponseWriter, r *http.Requ
 
 func (cr *ConsulRegistry) NodesHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
     vars := mux.Vars(r)
+    dc := vars["dc"];
+    if dc == "" {
+        dc = datacenter
+    }
 
-    options := &consulapi.QueryOptions{Datacenter: vars["dc"]}
+    options := &consulapi.QueryOptions{Datacenter: dc}
     nodes, _, err := cr.catalog.Nodes(options)
     if err != nil {
         w.WriteHeader(http.StatusBadRequest)
@@ -111,8 +115,12 @@ func (cr *ConsulRegistry) NodesHandler(w http.ResponseWriter, r *http.Request) (
 
 func (cr *ConsulRegistry) NodeHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
     vars := mux.Vars(r)
+    dc := vars["dc"];
+    if dc == "" {
+        dc = datacenter
+    }
 
-    options := &consulapi.QueryOptions{Datacenter: vars["dc"]}
+    options := &consulapi.QueryOptions{Datacenter: datacenter}
     node, _, err := cr.catalog.Node(vars["name"], options)
     if err != nil {
         w.WriteHeader(http.StatusBadRequest)
@@ -147,8 +155,12 @@ func (cr *ConsulRegistry) NodeHandler(w http.ResponseWriter, r *http.Request) (i
 
 func (cr *ConsulRegistry) HealthHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
     vars := mux.Vars(r)
+    dc := vars["dc"];
+    if dc == "" {
+        dc = datacenter
+    }
 
-    options := &consulapi.QueryOptions{Datacenter: vars["dc"]}
+    options := &consulapi.QueryOptions{Datacenter: datacenter}
     check, _, err := cr.health.Node(vars["name"], options)
     if err != nil {
         w.WriteHeader(http.StatusBadRequest)
@@ -176,6 +188,7 @@ func (cr *ConsulRegistry) registerWatcher(watchType string) error {
 func (w *Watcher) registerServiceWatcher(service string) error {
     wp, err := watch.Parse(map[string]interface{}{
         "type": "service",
+        "datacenter": datacenter,
         "service": service,
     })
     if err != nil {
@@ -203,7 +216,10 @@ func (w *Watcher) registerServiceWatcher(service string) error {
 }
 
 func newWatcher(addr string, watchType string) (*Watcher, error) {
-    wp, err := watch.Parse(map[string]interface{}{"type": watchType})
+    wp, err := watch.Parse(map[string]interface{}{
+        "type": watchType,
+        "datacenter": datacenter,
+    })
     if err != nil {
         return nil, err
     }
@@ -215,17 +231,15 @@ func newWatcher(addr string, watchType string) (*Watcher, error) {
     }
 
     wp.Handler = func(idx uint64, data interface{}) {
-        // @TODO: type switch seems to convert back to interface{}
-        // if applying multiple types on the case (e.g. case []*A, []*B
-        // it would be nice to combine these case statements for similar
-        // types; try using reflect.TypeOf instead, perhaps
         switch d := data.(type) {
         // nodes
         case []*consulapi.Node:
+            nodes := make([]*ClientNode, 0, len(d))
             for _, i := range d {
                 fmt.Printf("[ %v ]\t%v\n", time.Now(), i)
-                broadcastData(watchType, &i)
+                nodes = append(nodes, &ClientNode{i.Node, i.Address})
             }
+            broadcastData(watchType, &nodes)
         // checks
         case []*consulapi.HealthCheck:
             for _, i := range d {
@@ -269,7 +283,7 @@ func newWatcher(addr string, watchType string) (*Watcher, error) {
 }
 
 func broadcastData(watchType string, data interface{}) {
-    evt := &WatchEvent {
+    evt := &WatchEvent{
         "consul",
         watchType,
         data,
