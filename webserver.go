@@ -13,9 +13,10 @@ import (
 )
 
 var (
-    router     *mux.Router
     addr       string
     apiVersion string
+    datacenter string
+    router     *mux.Router
     indexTpl   *template.Template = template.Must(template.ParseFiles("index.html"))
 )
 
@@ -31,6 +32,9 @@ func processEnv() {
     }
     if apiVersion = os.Getenv("AVAST_API_VERSION"); apiVersion == "" {
         apiVersion = "v1"
+    }
+    if datacenter = os.Getenv("AVAST_DATACENTER"); datacenter == "" {
+        datacenter = "dc1"
     }
 }
 
