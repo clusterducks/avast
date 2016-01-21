@@ -6,7 +6,6 @@ import (
     "net/http"
     "os"
     "strings"
-    "text/template"
 
     "github.com/gorilla/handlers"
     "github.com/gorilla/mux"
@@ -17,7 +16,6 @@ var (
     apiVersion string
     datacenter string
     router     *mux.Router
-    indexTpl   *template.Template = template.Must(template.ParseFiles("index.html"))
 )
 
 func setHeaders(w http.ResponseWriter, headers map[string]string) {
@@ -43,7 +41,6 @@ func startWebserver() {
 
     router = mux.NewRouter()
     router.HandleFunc("/ws", wrap(wsHandler))
-    router.HandleFunc("/", wrap(indexHandler))
 
     dockerRouter := router.PathPrefix(fmt.Sprintf("/api/%v/docker", apiVersion)).Subrouter()
     dockerRouter.HandleFunc("/containers",         wrap(dockerClient.ContainersHandler))
@@ -63,11 +60,6 @@ func startWebserver() {
     http.Handle("/", router)
     loggedRouter := handlers.CombinedLoggingHandler(os.Stdout, router)
     panic(http.ListenAndServe(addr, handlers.CompressHandler(loggedRouter)))
-}
-
-func indexHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
-    indexTpl.Execute(w, r.Host)
-    return nil, nil
 }
 
 func wrap(handler func(w http.ResponseWriter, r *http.Request) (interface{}, error)) func(w http.ResponseWriter, r *http.Request) {
