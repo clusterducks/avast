@@ -14,15 +14,30 @@ import (
 
 var consulRegistry *ConsulRegistry
 
-type ClientNode struct {
-    Name        string  `json:"name"`
-    Address     string  `json:"address"`
+type ConsulService struct {
+    ID       string    `json:"id"`
+    Service  string    `json:"service"`
+    Tags     []string  `json:"tags"`
+    Port     int       `json:"port"`
+    Address  string    `json:"address"`
+}
+
+type ConsulHealthCheck struct {
+    Node         string   `json:"node"`
+    CheckID      string   `json:"checkId"`
+    Name         string   `json:"name"`
+    Status       string   `json:"status"`
+    Notes        string   `json:"notes"`
+    Output       string   `json:"output"`
+    ServiceID    string   `json:"serviceId"`
+    ServiceName  string   `json:"serviceName"`
 }
 
 type ConsulNode struct {
-    *ClientNode
-    Services  []*consulapi.AgentService  `json:"services"`
-    Checks    []*consulapi.HealthCheck   `json:"checks"`
+    Name      string                `json:"name"`
+    Address   string                `json:"address"`
+    Services  []*ConsulService      `json:"services"`
+    Checks    []*ConsulHealthCheck  `json:"checks"`
 }
 
 type ConsulRegistry struct {
@@ -98,48 +113,70 @@ func (cr *ConsulRegistry) NodesHandler(w http.ResponseWriter, r *http.Request) (
         return nil, nil
     }
 
-    var cnodes []*ClientNode
+    var cnodes []*ConsulNode
     for _, n := range nodes {
-        cnodes = append(cnodes, &ClientNode{
-            Name: n.Node,
-            Address: n.Address,
-        })
+      node, err := cr.fetchNode(n.Node)
+      if err != nil {
+        fmt.Println(err)
+      }
+      cnodes = append(cnodes, node)
     }
 
     return cnodes, nil
 }
 
-func (cr *ConsulRegistry) NodeHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
-    vars := mux.Vars(r)
-
+func (cr *ConsulRegistry) fetchNode(name string) (*ConsulNode, error) {
     options := &consulapi.QueryOptions{}
-    node, _, err := cr.catalog.Node(vars["name"], options)
+    node, _, err := cr.catalog.Node(name, options)
     if err != nil {
-        w.WriteHeader(http.StatusBadRequest)
-        w.Write([]byte(fmt.Sprintf("Consul endpoint failed: %v", err)))
-        return nil, nil
+        return nil, err
     }
 
-    health, _, err := cr.health.Node(vars["name"], options)
-    if err != nil {
-        w.WriteHeader(http.StatusBadRequest)
-        w.Write([]byte(fmt.Sprintf("Consul endpoint failed: %v", err)))
-        return nil, nil
-    }
-
-    services := make([]*consulapi.AgentService, 0, len(node.Services))
+    services := make([]*ConsulService, 0, len(node.Services))
     for  _, s := range node.Services {
-        services = append(services, s)
+        services = append(services, &ConsulService{
+          s.ID,
+          s.Service,
+          s.Tags,
+          s.Port,
+          s.Address,
+        })
+    }
+
+    checks, _, err := cr.health.Node(name, options)
+    health := make([]*ConsulHealthCheck, 0, len(checks))
+    for _, c := range checks {
+        health = append(health, &ConsulHealthCheck{
+          c.Node,
+          c.CheckID,
+          c.Name,
+          c.Status,
+          c.Notes,
+          c.Output,
+          c.ServiceID,
+          c.ServiceName,
+        })
     }
 
     return &ConsulNode{
-        ClientNode: &ClientNode{
-            Name: node.Node.Node,
-            Address: node.Node.Address,
-        },
-        Services: services,
-        Checks: health,
+        node.Node.Node,
+        node.Node.Address,
+        []*ConsulService(services),
+        health,
     }, nil
+}
+
+func (cr *ConsulRegistry) NodeHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
+    vars := mux.Vars(r)
+
+    node, err := cr.fetchNode(vars["name"])
+    if err != nil {
+        w.WriteHeader(http.StatusBadRequest)
+        w.Write([]byte(fmt.Sprintf("Consul endpoint failed: %v", err)))
+        return nil, err
+    }
+
+    return node, nil
 }
 
 //---------------------
@@ -222,17 +259,29 @@ func newWatcher(addr string, watchType string) (*Watcher, error) {
         switch d := data.(type) {
         // nodes
         case []*consulapi.Node:
-            nodes := make([]*ClientNode, 0, len(d))
+            nodes := make([]*ConsulNode, 0, len(d))
             for _, i := range d {
                 fmt.Printf("[ %v ]\t%v\n", time.Now(), i)
-                nodes = append(nodes, &ClientNode{i.Node, i.Address})
+                nodes = append(nodes, &ConsulNode{
+                  Name: i.Node,
+                  Address: i.Address,
+                })
             }
             broadcastData(watchType, &nodes)
         // checks
         case []*consulapi.HealthCheck:
             for _, i := range d {
                 fmt.Printf("[ %v ]\t%v\n", time.Now(), i)
-                broadcastData(watchType, &i)
+                broadcastData(watchType, &ConsulHealthCheck{
+                  i.Node,
+                  i.CheckID,
+                  i.Name,
+                  i.Status,
+                  i.Notes,
+                  i.Output,
+                  i.ServiceID,
+                  i.ServiceName,
+                })
             }
         // services
         case map[string][]string:
