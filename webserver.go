@@ -44,7 +44,8 @@ func startWebserver() {
 
     dockerRouter := router.PathPrefix(fmt.Sprintf("/api/%v/docker", apiVersion)).Subrouter()
     dockerRouter.HandleFunc("/containers",         wrap(dockerClient.ContainersHandler))
-    dockerRouter.HandleFunc("/container/{name}",   wrap(dockerClient.ContainerHandler))
+    dockerRouter.HandleFunc("/containers/graph",   wrap(dockerClient.ContainerGraphHandler))
+    dockerRouter.HandleFunc("/container/{id}",     wrap(dockerClient.ContainerHandler))
     dockerRouter.HandleFunc("/images",             wrap(dockerClient.ImagesHandler))
     dockerRouter.HandleFunc("/image/history/{id}", wrap(dockerClient.HistoryHandler))
     dockerRouter.HandleFunc("/info",               wrap(dockerClient.InfoHandler))

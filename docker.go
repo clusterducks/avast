@@ -20,6 +20,13 @@ type DockerClient struct {
     *client.Client
 }
 
+type GraphNode struct {
+    ID      string      `json:"id"`
+    Type    string      `json:"type"`
+    Names   []string    `json:"names"`
+    Images  []string    `json:"images"`
+}
+
 type ImageNode struct {
     ID          string              `json:"id"`
     ParentID    string              `json:"parentId"`
@@ -69,7 +76,7 @@ func (dc *DockerClient) ContainersHandler(w http.ResponseWriter, r *http.Request
 func (dc *DockerClient) ContainerHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
     vars := mux.Vars(r)
 
-    container, err := dc.ContainerInspect(vars["name"])
+    container, err := dc.ContainerInspect(vars["id"])
     if err != nil {
         w.WriteHeader(http.StatusBadRequest)
         w.Write([]byte(fmt.Sprintf("Docker engine endpoint failed: %v", err)))
@@ -77,6 +84,72 @@ func (dc *DockerClient) ContainerHandler(w http.ResponseWriter, r *http.Request)
     }
 
     return container, nil
+}
+
+func imageList(out *[]string, parent string, nodes []*ImageNode) {
+    for _, n := range nodes {
+        if n.ID == parent {
+            *out = append(*out, n.ID)
+            imageList(out, n.ParentID, nodes)
+        }
+    }
+}
+
+func (dc *DockerClient) ContainerGraphHandler(w http.ResponseWriter, r *http.Request) (interface{}, error) {
+    containers, err := dc.ContainerList(types.ContainerListOptions{All: true})
+    if err != nil {
+        w.WriteHeader(http.StatusBadRequest)
+        w.Write([]byte(fmt.Sprintf("Docker engine endpoint failed: %v", err)))
+        return nil, nil
+    }
+
+    images, err := dc.ImageList(types.ImageListOptions{All: true})
+    if err != nil {
+        w.WriteHeader(http.StatusBadRequest)
+        w.Write([]byte(fmt.Sprintf("Docker engine endpoint failed: %v", err)))
+        return nil, nil
+    }
+
+    inodes := make([]*ImageNode, len(images))
+    for i, img := range images {
+        inodes[i] = &ImageNode{
+            ID: img.ID,
+            ParentID: img.ParentID,
+        }
+    }
+
+    var nodes []*GraphNode
+
+    for _, c := range containers {
+        ci, err := dc.ContainerInspect(c.ID)
+        if err != nil {
+            w.WriteHeader(http.StatusBadRequest)
+            w.Write([]byte(fmt.Sprintf("Docker engine endpoint failed: %v", err)))
+            return nil, nil
+        }
+        var imgs []string
+        imageList(&imgs, ci.Image, inodes)
+        //fmt.Printf(" ===== IMAGES ======\n  %v\n", imgs)
+
+        nodes = append(nodes, &GraphNode{
+            c.ID,
+            "container",
+            c.Names,
+            //imgs,
+            []string{ci.Image},
+        })
+    }
+
+    for _, i := range images {
+        nodes = append(nodes, &GraphNode{
+            i.ID,
+            "image",
+            i.RepoTags,
+            []string{i.ParentID},
+        })
+    }
+
+    return nodes, nil
 }
 
 //---------------------
