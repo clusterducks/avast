@@ -14,6 +14,11 @@ import (
 
 var consulRegistry *ConsulRegistry
 
+type ConsulKV struct {
+  Key     string    `json:"key"`
+  Value   []byte    `json:"value"`
+}
+
 type ConsulService struct {
     ID       string    `json:"id"`
     Service  string    `json:"service"`
@@ -68,6 +73,8 @@ type WatchEvent struct {
 //- REGISTRY
 
 func newConsulRegistry() {
+    // @TODO: put a watch on "barney/docker/swarm/leader" key
+    // for current swarm leader
     config := consulapi.DefaultConfig()
     c, err := consulapi.NewClient(config)
     if err != nil {
@@ -199,8 +206,8 @@ func (cr *ConsulRegistry) HealthHandler(w http.ResponseWriter, r *http.Request) 
 //---------------------
 //- DISCOVERY
 
-func (cr *ConsulRegistry) registerWatcher(watchType string) error {
-    w, err := newWatcher(cr.addr, watchType)
+func (cr *ConsulRegistry) registerWatcher(watchType string, opts map[string]string) error {
+    w, err := newWatcher(cr.addr, watchType, opts)
     if err != nil {
         fmt.Println(err)
         return err
@@ -240,11 +247,16 @@ func (w *Watcher) registerServiceWatcher(service string) error {
     return nil
 }
 
-func newWatcher(addr string, watchType string) (*Watcher, error) {
-    wp, err := watch.Parse(map[string]interface{}{
+func newWatcher(addr string, watchType string, opts map[string]string) (*Watcher, error) {
+    var options = map[string]interface{}{
         "type": watchType,
         "datacenter": datacenter,
-    })
+    }
+    for k, v := range opts {
+        options[k] = v
+    }
+
+    wp, err := watch.Parse(options)
     if err != nil {
         return nil, err
     }
@@ -257,6 +269,13 @@ func newWatcher(addr string, watchType string) (*Watcher, error) {
 
     wp.Handler = func(idx uint64, data interface{}) {
         switch d := data.(type) {
+        // key
+        case *consulapi.KVPair:
+            fmt.Printf("[ %v ]\t%v\n", time.Now(), d)
+            broadcastData(watchType, &ConsulKV{
+              d.Key,
+              d.Value,
+            })
         // nodes
         case []*consulapi.Node:
             nodes := make([]*ConsulNode, 0, len(d))
@@ -313,6 +332,8 @@ func newWatcher(addr string, watchType string) (*Watcher, error) {
                     delete(w.watchers, i)
                 }
             }
+        default:
+            fmt.Printf("Could not interpret data type: %v", &d)
         }
     }
 
@@ -346,7 +367,8 @@ func (w *Watcher) Stop() {
 }
 
 func (cr *ConsulRegistry) EchoDiscovery() {
-    cr.registerWatcher("nodes")
-    cr.registerWatcher("checks")
-    cr.registerWatcher("services")
+    cr.registerWatcher("key", map[string]string{"key": "barney/docker/swarm/leader"})
+    cr.registerWatcher("nodes", nil)
+    cr.registerWatcher("checks", nil)
+    cr.registerWatcher("services", nil)
 }
