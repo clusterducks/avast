@@ -1,8 +1,8 @@
 package main
 
 func main() {
-    go wsHub.run()
-    newDockerClient()
-    newConsulRegistry()
-    startWebserver()
+	go wsHub.run()
+	newDockerClient()
+	newConsulRegistry()
+	startWebserver()
 }
