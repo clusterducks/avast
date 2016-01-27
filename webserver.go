@@ -44,8 +44,6 @@ func startWebserver() {
 	processEnv()
 
 	router = mux.NewRouter()
-	router.HandleFunc("/ws", wrap(wsHandler))
-	router.PathPrefix("/").Handler(http.FileServer(http.Dir(clientDir)))
 
 	dockerRouter := router.PathPrefix(fmt.Sprintf("/api/%v/docker", apiVersion)).Subrouter()
 	dockerRouter.HandleFunc("/containers", wrap(dockerClient.ContainersHandler))
@@ -62,6 +60,9 @@ func startWebserver() {
 	consulRouter.HandleFunc("/node/{name}", wrap(consulRegistry.NodeHandler))
 	consulRouter.HandleFunc("/health/{name}", wrap(consulRegistry.HealthHandler))
 	consulRouter.HandleFunc("/health/{name}/{dc}", wrap(consulRegistry.HealthHandler))
+
+	router.HandleFunc("/ws", wrap(wsHandler))
+	router.PathPrefix("/").Handler(http.FileServer(http.Dir(clientDir)))
 
 	http.Handle("/", router)
 	loggedRouter := handlers.CombinedLoggingHandler(os.Stdout, router)
