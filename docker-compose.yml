@@ -17,3 +17,6 @@ web:
     - DOCKER_API_VERSION=v1.21
     - DOCKER_HOST=tcp://dockerhost:3376
     - CONSUL_HTTP_ADDR=consulhost:8500
+  extra_hosts:
+    - "dockerhost:$AVAST_DOCKER_HOST"
+    - "consulhost:$AVAST_CONSUL_HOST"
