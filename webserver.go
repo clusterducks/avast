@@ -14,6 +14,7 @@ import (
 var (
 	addr       string
 	apiVersion string
+	clientDir  string
 	datacenter string
 	router     *mux.Router
 )
@@ -31,6 +32,9 @@ func processEnv() {
 	if apiVersion = os.Getenv("AVAST_API_VERSION"); apiVersion == "" {
 		apiVersion = "v1"
 	}
+	if clientDir = os.Getenv("AVAST_CLIENT_DIR"); clientDir == "" {
+		clientDir = "./client"
+	}
 	if datacenter = os.Getenv("AVAST_DATACENTER"); datacenter == "" {
 		datacenter = "dc1"
 	}
@@ -40,8 +44,6 @@ func startWebserver() {
 	processEnv()
 
 	router = mux.NewRouter()
-	router.HandleFunc("/ws", wrap(wsHandler))
-	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./client/")))
 
 	dockerRouter := router.PathPrefix(fmt.Sprintf("/api/%v/docker", apiVersion)).Subrouter()
 	dockerRouter.HandleFunc("/containers", wrap(dockerClient.ContainersHandler))
@@ -58,6 +60,9 @@ func startWebserver() {
 	consulRouter.HandleFunc("/node/{name}", wrap(consulRegistry.NodeHandler))
 	consulRouter.HandleFunc("/health/{name}", wrap(consulRegistry.HealthHandler))
 	consulRouter.HandleFunc("/health/{name}/{dc}", wrap(consulRegistry.HealthHandler))
+
+	router.HandleFunc("/ws", wrap(wsHandler))
+	router.PathPrefix("/").Handler(http.FileServer(http.Dir(clientDir)))
 
 	http.Handle("/", router)
 	loggedRouter := handlers.CombinedLoggingHandler(os.Stdout, router)
