@@ -41,6 +41,7 @@ func startWebserver() {
 
 	router = mux.NewRouter()
 	router.HandleFunc("/ws", wrap(wsHandler))
+	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./client/")))
 
 	dockerRouter := router.PathPrefix(fmt.Sprintf("/api/%v/docker", apiVersion)).Subrouter()
 	dockerRouter.HandleFunc("/containers", wrap(dockerClient.ContainersHandler))
