@@ -7,14 +7,20 @@
 
 - `go` (1.4+)
 
-### Building
+### Building locally
 
 ```
 go get
 go build -o bin/avast
 ```
 
-### Running
+### Building
+
+```
+docker-compose build
+```
+
+### Running locally
 
 ```
 AVAST_API_VERSION=v1 \
@@ -24,4 +30,12 @@ AVAST_API_VERSION=v1 \
   DOCKER_API_VERSION=v1.21 \
   CONSUL_HTTP_ADDR=1.1.1.1:8500 \
   bin/avast
+```
+
+### Running
+
+```
+AVAST_DOCKER_HOST=1.1.1.1 \
+  AVAST_CONSUL_HOST=1.1.1.1 \
+  docker-compose up
 ```
